@@ -1,7 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
-using CounterStrikeSharp.API.Modules.Entities;
+using CounterStrikeSharp.API.Modules.Admin;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
@@ -14,10 +14,10 @@ public class CS2_AntiVPN : BasePlugin, IPluginConfig<AntiVpnConfig>
 	private string? _connectionString;
 	private Database? _database;
 	private readonly HashSet<int> _bannedPlayers = [];
-	    
+
 	public override string ModuleName => "CS2-AntiVPN";
-	public override string ModuleVersion => "1.0.4";
-	public override string ModuleAuthor => "daffyy";
+	public override string ModuleVersion => "1.0.5";
+	public override string ModuleAuthor => "daffyy, sh0tx";
 	public override string ModuleDescription => "Kicks players using VPNs";
 
 	public override void Load(bool hotReload)
@@ -84,8 +84,11 @@ public class CS2_AntiVPN : BasePlugin, IPluginConfig<AntiVpnConfig>
 	public HookResult EventPlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo _)
 	{
 		CCSPlayerController? player = @event.Userid;
+
 		if (player == null || !player.IsValid || player.IsBot || player.IpAddress == null) return HookResult.Continue;
-		var ipAddress = player.IpAddress.Split(":")[0];
+        if (AdminManager.PlayerInGroup(player, "#css/admin")) return HookResult.Continue;
+
+        var ipAddress = player.IpAddress.Split(":")[0];
 
 		if (Config.AllowedIps.Contains(ipAddress))
 			return HookResult.Continue;
